@@ -1,0 +1,70 @@
+package org.lejos.sample.btreceive;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import javax.microedition.sensor.SensorConnection;
+
+import lejos.nxt.LCD;
+import lejos.nxt.Motor;
+import lejos.nxt.comm.BTConnection;
+import lejos.nxt.comm.Bluetooth;
+
+/**
+ * Receive data from another NXT, a PC, a phone, 
+ * or another bluetooth device.
+
+ * @author Lawrie Griffiths
+ *
+ */
+public class BTReceive {
+
+	public static void main(String [] args)  throws Exception 
+	{
+		String connected = "Connected";
+        String waiting = "Waiting...";
+        String closing = "Closing...";
+        
+		while (true)
+		{
+			LCD.drawString(waiting,0,0);
+			LCD.refresh();
+
+	        BTConnection btc = Bluetooth.waitForConnection();
+	        
+			LCD.clear();
+			LCD.drawString(connected,0,0);
+			LCD.refresh();	
+
+			DataInputStream dis = btc.openDataInputStream();
+			DataOutputStream dos = btc.openDataOutputStream();
+			
+
+			Motor.A.setSpeed(Motor.A.getMaxSpeed());
+			Motor.C.setSpeed(Motor.C.getMaxSpeed());
+			while(true) {
+				int jobb = dis.readInt();
+				int bal = dis.readInt();
+				int sebesseg = dis.readInt();
+				
+				if(jobb>0)
+					Motor.C.forward();
+				else if(jobb<0)
+					Motor.C.backward();
+				else Motor.C.suspendRegulation();
+				
+				if(bal>0)
+					Motor.A.forward();
+				else if(bal<0)
+					Motor.A.backward();
+				else Motor.A.suspendRegulation();
+				
+
+				LCD.drawInt(sebesseg,7,0,1);
+				LCD.refresh();
+				dos.writeInt(-sebesseg);
+				dos.flush();
+			}
+		}
+	}
+}
+
